@@ -1,16 +1,10 @@
-# new imports
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from django.contrib.auth import get_user_model
-from django.urls import reverse
-from rest_framework import generics, status, views, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .permissions import AllowANyUser
-from .serializers import (
-                        LoginSerializer,
-                        RegistrationSerializer, 
+from rest_framework import generics, status
+from user.permissions import AllowANyUser
+from user.serializers import (LoginSerializer, RegistrationSerializer, 
                         )
+
 # Create your views here.
 class RegistrationView(AllowANyUser, generics.GenericAPIView):
     serializer_class = RegistrationSerializer
@@ -31,3 +25,4 @@ class LoginView(AllowANyUser, generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    

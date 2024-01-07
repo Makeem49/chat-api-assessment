@@ -12,22 +12,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password']
+        fields = ['first_name', 'last_name', 'email', 'username', 'password']
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
 
 class LoginSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length=255, min_length=3)
+    email = serializers.EmailField(max_length=255, min_length=3, write_only=True)
     password = serializers.CharField(max_length=68, min_length=8, write_only=True)
     refresh_token = serializers.CharField(max_length=500, min_length=8, read_only=True)
     access_token = serializers.CharField(max_length=500, min_length=8, read_only=True)
-    role = serializers.ListField(child=serializers.CharField(max_length=50), read_only=True)
-    permissions = serializers.ListField(child=serializers.CharField(max_length=20), read_only=True)
-    status = serializers.BooleanField(read_only=True)
-    is_admin = serializers.BooleanField(read_only=True)
-    is_super_user = serializers.BooleanField(read_only=True)
+    
     
     def get_is_super_user(self, value):
         print(value)
@@ -35,8 +31,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'refresh_token', 
-                  'access_token', 'permissions', 'role', 'status', 'is_admin', 'is_super_user']
+        fields = ['refresh_token', 'access_token', 'password', 'email']
 
     def validate(self, attrs):
         email = attrs.get('email', '')
@@ -60,3 +55,17 @@ class LoginSerializer(serializers.ModelSerializer):
                     )   
         
         return data
+    
+    
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+        
+    def get_username(self, obj):
+        if not obj.username:
+            return obj.first_name
+        return obj.username
+    
+    
+    
