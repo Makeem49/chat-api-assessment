@@ -106,11 +106,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content, **kwargs):
         message_type = content.get('type')
         
-        if message_type == "read_messages":
-            message_id = content.get('message_id') # update 
-            to_user = self.user
-            await read_message(self.room, message_id, to_user)
-        
         if message_type.lower() == 'chat_message':
             content = content.get('content')
             recievers = await self.get_recievers(self.room.id)
@@ -122,7 +117,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 self.room_group_name, {"type": "chat_message", "message": message_data}
             )
             return await super().receive_json(content, **kwargs)
-
+        
+        else:
+            await self.send_json({
+                "status" : "No event specify",
+                "status" : 400
+            })
+            
+            self.disconnect(400)
 
     # Receive message from room group
     async def chat_message(self, event):
@@ -130,19 +132,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Send message to WebSocket
         await self.send(text_data=json.dumps({"message": message}))
         
-        
     async def user_join(self, event):
         users = event['user']
         await self.send_json({"user": users})
-        
-        
+          
     async def user_leave(self, event):
-        await self.send_json(event)
-        
-        
-    # async def get_user(self, id):
-    #     return  await get_sender(id)
-    
+        await self.send_json(event)   
     
     async def get_recievers(self, id):
         return await get_all_user_in_a_room(id)
@@ -151,3 +146,64 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def encode_json(cls, content):
         return json.dumps(content, cls=UUIDEncoder)
         
+        
+
+
+class ReadChatConsumer(AsyncJsonWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.user = None
+        self.room = None 
+        self.room_group_name = None 
+    
+    async def connect(self):
+        self.user = self.scope.get("user")
+        # print(self.user, 'user')
+        
+        if not self.user:
+            await self.close(code=403)
+            
+        await self.accept()
+        
+        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        self.room_group_name = f"chat_{self.room_name}"
+        
+        self.room, created =  await get_or_create_room(self.room_name)
+
+        
+    async def disconnect(self, close_code):
+                user = self.user
+                if user:
+                    # Notify other users about the user leaving
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            "type": "user_leave",
+                            "user": user.username if user.username else user.first_name,
+                            "message" : "User left"
+                        }
+                    )
+
+                await remove_user_from_room(self.room, self.user)
+                await self.channel_layer.group_discard(self.room_name, self.channel_name)
+                
+                return super().disconnect(close_code)
+        
+        
+    async def receive_json(self, content, **kwargs):
+        message_type = content.get('type')
+        
+        if message_type == "read_messages":
+            message_id = content.get('message_id') # update 
+            to_user = self.user
+            await read_message(self.room, message_id, to_user)
+        else:
+            await self.send_json({
+                "status" : "No event specify",
+                "status" : 400
+            })
+            
+            self.disconnect(400)
+
+    
