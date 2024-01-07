@@ -1,8 +1,9 @@
 from datetime import datetime
 import json
+from django.utils import timezone
 from uuid import UUID
 from channels.db import database_sync_to_async
-from chat.models import Room, Message
+from chat.models import Room, Message, UserMessage
 from chat.serializers import MessageSerializer
 from user.models import User
 
@@ -23,7 +24,7 @@ def add_user_to_room(room, id):
     
 @database_sync_to_async
 def get_all_messages(room, num_of_message=50):
-    return room.messages.all().order_by("-timestamp")[0:num_of_message]
+    return room.messages.all().order_by("-date_created")[0:num_of_message]
 
 @database_sync_to_async
 def get_total_messages_number(room):
@@ -69,8 +70,14 @@ def create_message(sender, receivers, room, content):
 
 @database_sync_to_async
 def read_message(room, message_id, to_user):
-        messages_to_me = room.messages.filter(to_users=to_user, id=message_id)
-        messages_to_me.update(read=True, read_timestamp=datetime.now())
+        print(to_user, 'to user')
+        messages_to_me = room.messages.filter(to_users__in=[to_user], id=message_id).first()
+        print(messages_to_me, 'meesage to me')
+        user_message = UserMessage.objects.filter(message=messages_to_me, user=to_user).first()
+        print(user_message, 'uurturoieuoiu')
+        user_message.read = True
+        user_message.date_read = timezone.now()
+        user_message.save()
 
 
 class UUIDEncoder(json.JSONEncoder):

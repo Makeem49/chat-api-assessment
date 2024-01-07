@@ -61,7 +61,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
         )
         
-        # Notifying room of new user
+        # Notifying room of new user        
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -108,7 +108,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         
         if message_type == "read_messages":
             message_id = content.get('message_id') # update 
-            to_user = self.user.id
+            to_user = self.user
             await read_message(self.room, message_id, to_user)
         
         if message_type.lower() == 'chat_message':

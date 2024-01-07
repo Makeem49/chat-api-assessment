@@ -1,6 +1,7 @@
+import uuid
+from django.utils import timezone
 from django.db import models
 from user.models import User 
-import uuid
 # Create your models here.
 
 
@@ -46,18 +47,17 @@ class Message(models.Model):
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages_from_me")
     to_users = models.ManyToManyField(User, null=True, related_name="messages_to_users", through='UserMessage')
     content = models.CharField(max_length=512)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    # read = models.BooleanField(default=False)
-    # read_timestamp = models.DateTimeField(null=True)
+    date_created = models.DateTimeField(default=timezone.now)
+    
     
     def __str__(self):
-        return f"From {self.from_user.username} to {self.room.name} {self.content} [{self.timestamp}]"
+        return f"From {self.from_user.username} to {self.room.name}"
     
     
 class UserMessage(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    read = models.DateField(default=False)
-
+    read = models.BooleanField(default=False)
+    date_read = models.DateTimeField(null=True)
 
     
