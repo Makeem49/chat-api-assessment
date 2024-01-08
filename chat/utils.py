@@ -52,9 +52,9 @@ def get_user(id):
     return User.obj.filter(id=id)
 
 @database_sync_to_async
-def get_all_user_in_a_room(id):
+def get_all_user_in_a_room(id, sender):
     room = Room.objects.filter(id=id).first()
-    users = room.users.all()
+    users = room.users.all().exclude(id=sender.id)
     return users 
 
 
@@ -70,11 +70,8 @@ def create_message(sender, receivers, room, content):
 
 @database_sync_to_async
 def read_message(room, message_id, to_user):
-        print(to_user, 'to user')
         messages_to_me = room.messages.filter(to_users__in=[to_user], id=message_id).first()
-        print(messages_to_me, 'meesage to me')
         user_message = UserMessage.objects.filter(message=messages_to_me, user=to_user).first()
-        print(user_message, 'uurturoieuoiu')
         user_message.read = True
         user_message.date_read = timezone.now()
         user_message.save()

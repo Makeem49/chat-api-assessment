@@ -43,5 +43,5 @@ class MessageSerializer(serializers.ModelSerializer):
         return UserSerializer(obj.from_user).data
 
     def get_to_user(self, obj):
-        user_message = UserMessage.objects.filter(user__in=obj.to_users.all()).all()
+        user_message = UserMessage.objects.filter(user__in=obj.to_users.all(), message_id=obj.id).all()
         return RecieverSerializer(user_message, many=True).data
