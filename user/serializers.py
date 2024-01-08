@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.contrib import auth
 from django.utils import timezone
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
+
 from rest_framework.exceptions import AuthenticationFailed
 from user.models import User
 
@@ -55,6 +58,20 @@ class LoginSerializer(serializers.ModelSerializer):
                     )   
         
         return data
+    
+    
+class LogoutSerializer(serializers.Serializer):
+    refresh_token =  serializers.CharField()
+
+    def validate(self, attrs):
+        self.token = attrs['refresh_token']
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            raise ValidationError({'incorrect_token': 'The token is either invalid or expired'})
     
     
 class UserSerializer(serializers.ModelSerializer):
