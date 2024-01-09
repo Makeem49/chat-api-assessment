@@ -53,7 +53,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             users = await users_in_room(self.room) # get the number of users in the room chat 
             
             
-            # Notifying room of new user that join the room 
+            # Notifying room of users in the room 
             await self.send_json(
                 {
                     "type" : "online_user_list",
