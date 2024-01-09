@@ -12,42 +12,42 @@ Features
 - Simple and easy-to-use API endpoints.
 
 - The API exposes the following endpoints:
-    base_url = http://127.0.0.1:8000/api/auth/
-    Login
-        Endpoint: login/
-        Description: Authenticate users and obtain access tokens.
+    - base_url = http://127.0.0.1:8000/api/auth/
+    - Login
+        - Endpoint: login/
+        - Description: Authenticate users and obtain access tokens.
 
-    Logout
-        Endpoint:  logout/
-        Description: Invalidate user tokens to log them out by providing refresh token
+    - Logout
+        - Endpoint:  logout/
+        - Description: Invalidate user tokens to log them out by providing refresh token
 
-    Register
-        Endpoint: register/
-        Description: Register new users.
+    - Register
+        - Endpoint: register/
+        - Description: Register new users.
 
-    Send-message WebSocket Endpoint
-        Endpoint: ws://127.0.0.1:8000/ws/chat/basket_ball/?token={{access_token}}
-        Description: WebSocket endpoint for sending real-time messages.
-        payload:
-            {  
+    - Send-message WebSocket Endpoint
+        - Endpoint: ws://127.0.0.1:8000/ws/chat/{{room_name}}/?token={{access_token}}
+        - Description: WebSocket endpoint for sending real-time messages.
+        - payload:
+            - {  
                 "type":"chat_message",
                 "content" : "Hello wolrd"
             }
   
 
-    Read-message WebSocket Connection
-        Endpoint: ws://127.0.0.1:8000/ws/read/basket_ball/?token={{access_token}}
-        Description: WebSocket connection for reading messages and send response to the room notifying teh read status
-        payload:
-            {
+    - Read-message WebSocket Connection
+        - Endpoint: ws://127.0.0.1:8000/ws/read/{{room_name}}/?token={{access_token}}
+        - Description: WebSocket connection for reading messages and send response to the room notifying teh read status
+        - payload:
+            - {
              "message_id" : "30a6d602-b52c-45c0-a6c6-baf4c99eb5f4",
              "type":"read_messages"
             }
 
 
-Getting Started
+- Getting Started
 
-To get started with the Chat API, follow these steps:
+- To get started with the Chat API, follow these steps:
 
 
 1. 
@@ -56,7 +56,7 @@ To get started with the Chat API, follow these steps:
 
 or 
 
-Clone the image on docker hub : docker pull makeem/chat-api:v1
+- Clone the image on docker hub : docker pull makeem/chat-api:v1
 
 
 2. Install packeages using pip install
