@@ -26,6 +26,9 @@ DEBUG = bool(os.environ.get("DEBUG", default=0))
 # ALLOWED_HOSTS = ['127.0.0.1']
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+
 AUTH_USER_MODEL = 'user.User'
 
 
