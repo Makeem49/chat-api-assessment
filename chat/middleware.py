@@ -51,7 +51,6 @@ class TokenAuthenticationMiddleware:
         
         """
         query_params = parse_qs(scope["query_string"].decode())
-        print(query_params, 'hiufheuwuuuuuuuuuuuuu')
         
         token = query_params.get('token', None)
         
@@ -59,7 +58,6 @@ class TokenAuthenticationMiddleware:
             return await self.app(scope, receive, send) 
         else:
             token = query_params["token"][0]
-            print(token, 'token value')
             scope["token"] = token
             scope["user"] = await get_user_from_access_token(scope)
         

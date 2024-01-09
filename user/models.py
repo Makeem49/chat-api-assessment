@@ -33,14 +33,4 @@ class User(AbstractBaseUser, PermissionsMixin):
             'access': str(refresh.access_token)
         }
         
-    # @property
-    # def password():
-    #     raise AttributeError('Password is not callable.')
-    
-    # @password.setter
-    # def password(self, password):
-    #     """Hash user password"""
-    #     hash_password = make_password(password)
-    #     self.password = hash_password
-    #     self.save()
 

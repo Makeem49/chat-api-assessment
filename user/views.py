@@ -29,11 +29,8 @@ class LoginView(permissions.AllowANyUser, generics.GenericAPIView):
     
     
 class LogoutView(generics.GenericAPIView):
-    authentication_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     serializer_class = LogoutSerializer
-
-    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

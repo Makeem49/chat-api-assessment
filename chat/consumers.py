@@ -34,54 +34,54 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     
     async def connect(self):
         self.user = self.scope.get("user")
-        # print(self.user, 'user')
+        print(self.user, 'user')
         
         if not self.user:
             await self.close(code=403)
-            
-        await self.accept()
+        else:
+            await self.accept()
 
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"chat_{self.room_name}"
-        
-        self.room, created =  await get_or_create_room(self.room_name)
-        await add_user_to_room(self.room, self.user.id)
-        
-        # Join room group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        
-        users = await users_in_room(self.room) # get the number of users in the room chat 
-        
-        
-        # Notifying room of new user that join the room 
-        await self.send_json(
-            {
-                "type" : "online_user_list",
-                "users" : [user for user in users]
-            }
-        )
-        
-        # Notifying room of new user        
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                "type": "user_join",
-                "user": f"{self.user.username if self.user.username else self.user.first_name} joined the chat"
-            },
-        )
-        
-        
-        messages = await get_all_messages(self.room, 20)
-        message_count = await get_total_messages_number(self.room)
-        message_data = await get_messages_data(messages)
-        
-        await self.send_json(
-            {
-                "type" : "last_20_messages",
-                "messages" : message_data,
-                "has_more" : message_count > 10
-            }
-        )
+            self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+            self.room_group_name = f"chat_{self.room_name}"
+            
+            self.room, created =  await get_or_create_room(self.room_name)
+            await add_user_to_room(self.room, self.user.id)
+            
+            # Join room group
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+            
+            users = await users_in_room(self.room) # get the number of users in the room chat 
+            
+            
+            # Notifying room of new user that join the room 
+            await self.send_json(
+                {
+                    "type" : "online_user_list",
+                    "users" : [user for user in users]
+                }
+            )
+            
+            # Notifying room of new user        
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "user_join",
+                    "user": f"{self.user.username if self.user.username else self.user.first_name} joined the chat"
+                },
+            )
+            
+            
+            messages = await get_all_messages(self.room, 20)
+            message_count = await get_total_messages_number(self.room)
+            message_data = await get_messages_data(messages)
+            
+            await self.send_json(
+                {
+                    "type" : "last_20_messages",
+                    "messages" : message_data,
+                    "has_more" : message_count > 10
+                }
+            )
                
         
     async def disconnect(self, close_code):
@@ -97,10 +97,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                         }
                     )
 
-                await remove_user_from_room(self.room, self.user)
-                await self.channel_layer.group_discard(self.room_name, self.channel_name)
-                
-                return super().disconnect(close_code)
+                    await remove_user_from_room(self.room, self.user)
+                    await self.channel_layer.group_discard(self.room_name, self.channel_name)
+                    
+                    return super().disconnect(close_code)
+                else:
+                    return super().disconnect(400)
         
         
     async def receive_json(self, content, **kwargs):
@@ -143,6 +145,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     @classmethod
     async def encode_json(cls, content):
         return json.dumps(content, cls=UUIDEncoder)
+    
+    async def notification(self, event):
+        await self.send(text_data=json.dumps({"message": event["message"]}))
         
         
 
@@ -161,13 +166,20 @@ class ReadChatConsumer(AsyncJsonWebsocketConsumer):
         
         if not self.user:
             await self.close(code=403)
+        else:  
+            await self.accept()
             
-        await self.accept()
-        
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        self.room_group_name = f"chat_{self.room_name}"
-        
-        self.room, created =  await get_or_create_room(self.room_name)
+            self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+            self.room_group_name = f"chat_{self.room_name}"
+            
+            self.room, created =  await get_or_create_room(self.room_name)
+            
+            await self.send_json(
+                {
+                    "type" : "online_user_list",
+                    "users" : "User"
+                }
+            )
 
         
     async def disconnect(self, close_code):
@@ -182,6 +194,14 @@ class ReadChatConsumer(AsyncJsonWebsocketConsumer):
             to_user = self.user
             await read_message(self.room, message_id, to_user)
             
+            await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "notification",
+                        "message": f"{self.user.username} read the message with id {message_id}",
+                    },
+                )
+            
             
         else:
             await self.send_json({
@@ -191,13 +211,8 @@ class ReadChatConsumer(AsyncJsonWebsocketConsumer):
             
             self.disconnect(400)
             
-    # async def read_response(self, event):
-    #     await self.send_json(event)
+    async def notification(self, event):
+        await self.send(text_data=json.dumps({"message": event["message"]}))
         
-    async def read_response(self, event):
-        message = event["message"]
-        await self.send(text_data=json.dumps({"message": message}))
-            
-    
 
     
