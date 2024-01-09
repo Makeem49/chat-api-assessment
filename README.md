@@ -51,7 +51,7 @@ To get started with the Chat API, follow these steps:
 
 
 1. 
-  git clone [https://github.com/your-username/simple-chat-api](https://github.com/Makeem49/chat-api-assessment.git)
+  git clone [https://github.com/Makeem49/chat-api-assessment.git](https://github.com/Makeem49/chat-api-assessment.git)
   cd simple-chat-api
 
 or 
