@@ -1,0 +1,13 @@
+# django-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-api
+spec:
+  selector:
+    app: chat-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000

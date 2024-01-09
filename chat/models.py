@@ -8,7 +8,7 @@ from user.models import User
 
 class Room(models.Model):
     name = models.CharField(max_length=150)
-    users = models.ManyToManyField(User, null=True)
+    users = models.ManyToManyField(User)
     date_created = models.DateTimeField(auto_now_add=True)
     
     def get_online_count(self):
@@ -45,7 +45,7 @@ class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="messages")
     from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages_from_me")
-    to_users = models.ManyToManyField(User, null=True, related_name="messages_to_users", through='UserMessage')
+    to_users = models.ManyToManyField(User, related_name="messages_to_users", through='UserMessage')
     content = models.CharField(max_length=512)
     date_created = models.DateTimeField(default=timezone.now)
     
